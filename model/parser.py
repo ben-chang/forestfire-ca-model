@@ -49,7 +49,7 @@ def parse_header (file):
     nCols = None
     nRows = None
     for line in file:
-        words =  line.split(' ')
+        words = line.split(' ')
         if (words[0] == COL_WORD):
             try:
                 nCols = int(words[1])
