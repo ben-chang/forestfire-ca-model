@@ -3,6 +3,14 @@ import math
 
 
 class Simulation(object):
+    """
+    Simulation class: A simulation object that simulates individual wildfires
+                      based on constant landscape characteristics (fuel configuration,
+                      topography and spatial ignition likelihoods). The class and the
+                      fire_spread() function is flexible in the sense that it allows
+                      users to use any arbitrary fire event duration, ignition location,
+                      wind speed and wind direction for spread events.
+    """
 
     WIND_INF_Y_INTERCEPT = 1
     WIND_INF_SLOPE = 2/30.0
@@ -27,6 +35,22 @@ class Simulation(object):
     def __init__(self, fuel_matrix, terrain_matrix,
                  cell_side_length, ignition_matrix,
                  lookup_table=DEFAULT_FUEL_LOOKUP_TABLE):
+
+        """
+        :param fuel_matrix     : A python nested list (matrix) of 'int' values
+                                 representing the landscape's fuel configuration.
+        :param terrain_matrix  : A python nested list (matrix) of 'int'/'float'
+                                 values representing the landscape's topography.
+        :param cell_side_length: An 'int'/'float' value indicating the
+                                 resolution of the landscape.
+        :param ignition_matrix : A python nested list (matrix) of 'int'/'float'
+                                 values between 0-100 representing the spatial
+                                 ignition likelihoods of the landscape.
+        :param lookup_table    : A dictionary of 'int' keys & 'float' values
+                                 where keys map from 'int' fuel type codes
+                                 to associated spread rate values in m/s.
+        """
+
         self.width = len(fuel_matrix[0])
         self.height = len(fuel_matrix)
         self.fuel_matrix = fuel_matrix
@@ -37,6 +61,16 @@ class Simulation(object):
         self.max_spread_rate = Simulation.get_max_key(self.lookup_table)
 
     def __initialise_terrain_influence_matrix(self, terrain_matrix):
+
+        """
+        :param terrain_matrix           : A python nested list (matrix) of 'int'/'float'
+                                          values representing the landscape's topography.
+        :return terrain_influence_matrix: A python nested list (matrix) of tuples containing
+                                          8 terrain influence values from the eight cardinal
+                                          spread directions (W, N, E, S, NW, NE, SE, SW)
+                                          influencing fire spread towards the middle cell.
+
+        """
         terrain_influence_matrix = []
         for i in xrange(1, self.height, 1):
             sub_matrix = []
@@ -70,20 +104,18 @@ class Simulation(object):
             terrain_influence_matrix.append(sub_matrix)
         return terrain_influence_matrix
 
-    @staticmethod
-    def get_n_iterations(max_spread_rate, cell_side_length,
-                         event_duration):
-        return int((3600 * event_duration) / (cell_side_length / max_spread_rate))
-
-    @staticmethod
-    def get_max_key(dictionary):
-        max_val_key = dictionary.keys()[0]
-        for key in dictionary.keys:
-            if dictionary[key] > dictionary[max_val_key]:
-                max_val_key = key
-        return max_val_key
-
     def __get_ignition_probabilities(self, ignition_matrix):
+
+        """
+        :param ignition_matrix     : A python nested list (matrix) of 'int'/'float'
+                                     values between 0-100 representing the spatial
+                                     ignition likelihoods of the landscape
+        :return potential_locations: A list of multiple ignition locations where
+                                     landscape[i][j] is appended to ignition
+                                     probability list proportionally to its
+                                     ignition likelihood
+        """
+
         potential_locations = []
         for i in xrange(self.height):
             for j in xrange(self.width):
@@ -91,46 +123,20 @@ class Simulation(object):
                     potential_locations.append((i, j))
         return potential_locations
 
-    @staticmethod
-    def random_choice(collection):
-        return collection[randint(0, len(collection) - 1)]
-
-    @staticmethod
-    def calculate_wind_influence(wind_direction, wind_speed,
-                                 influence_direction):
-        wind_dir_rad = (wind_direction / 180.0) * math.pi
-        inf_dir_rad = (influence_direction / 180.0) * math.pi
-        delta_dir_rad = math.fabs(wind_dir_rad / inf_dir_rad)
-        wind_speed_inf_comp = wind_speed * math.cos(delta_dir_rad)
-        return Simulation.linear_map(wind_speed_inf_comp, Simulation.WIND_INF_Y_INTERCEPT,
-                                     Simulation.WIND_INF_SLOPE)
-
-    @staticmethod
-    def linear_map(x, y_intercept, slope):
-        return min(0.01, y_intercept + (slope * x))
-
-    @staticmethod
-    def local_rule(self_state, w_state, n_state, e_state, s_state,
-                   nw_state, ne_state, se_state, sw_state,
-                   w_elev_inf, n_elev_inf, e_elev_inf, s_elev_inf,
-                   nw_elev_inf, ne_elev_inf, se_elev_inf, sw_elev_inf,
-                   w_wind, n_wind, e_wind, s_wind,
-                   nw_wind, ne_wind, se_wind, sw_wind, self_spread_rate):
-        next_state = self_spread_rate *\
-                    (self_state + (w_state * w_elev_inf * w_wind +
-                                   n_state * n_elev_inf * n_wind +
-                                   e_state * e_elev_inf * e_wind +
-                                   s_state * s_elev_inf * s_wind) +
-                     Simulation.DIAGONAL_DISTANCE_WEIGHT *
-                                  (nw_state * nw_elev_inf * nw_wind +
-                                   ne_state * ne_elev_inf * ne_wind +
-                                   se_state * se_elev_inf * se_wind +
-                                   sw_state * sw_elev_inf * sw_wind)
-                     )
-        return min(1, next_state)
-
     def spread_fire(self, wind_data, event_duration_hrs,
                     random_ignition=False):
+        """
+        :param wind_data         :  A tuple of wind direction and wind speed:
+                                    wind direction: counter-clockwise departure from
+                                                    West-East axis in degrees.
+                                    wind speed:     in m/s.
+        :param event_duration_hrs:  Length of spread event in hours.
+        :param random_ignition   : 'Boolean' value indicating ignition type:
+                                   'True'  = random ignition
+                                   'False' = probability based ignition
+        :return fire_dimension   :  List of tuples storing fire perimeter
+                                   'x' & 'y' values plus ignition origin .
+        """
 
         previous_states = [[0] * (self.width+1) for i in xrange(self.height+1)]
         n_iterations = Simulation.get_n_iterations(self.max_spread_rate,
@@ -186,3 +192,112 @@ class Simulation(object):
                     sub_next_states.append(next_state)
                 next_states.append(sub_next_states)
             previous_states = next_states
+
+    @staticmethod
+    def get_n_iterations(max_spread_rate, cell_side_length,
+                         event_duration):
+        """
+        :param max_spread_rate : 'int' fuel of fuel type with maximum spread rate in m/s.
+        :param cell_side_length: 'int'/'float' resolution of landscape in meters.
+        :param event_duration  :  Length of fire spread event in hours.
+        :return                : 'int' number indicating the number of simulation iterations.
+        """
+        return int((3600 * event_duration) / (cell_side_length / max_spread_rate))
+
+    @staticmethod
+    def get_max_key(dictionary):
+
+        """
+        :param dictionary  : any arbitrary dictionary
+        :return max_val_key: the key of maximum value within the dictionary
+        """
+        max_val_key = dictionary.keys()[0]
+        for key in dictionary.keys:
+            if dictionary[key] > dictionary[max_val_key]:
+                max_val_key = key
+        return max_val_key
+
+    @staticmethod
+    def random_choice(collection):
+        """
+        :param collection: Any arbitrary iterable python collection
+        :return          : A random element of the input python collection
+        """
+        return collection[randint(0, len(collection) - 1)]
+
+    @staticmethod
+    def calculate_wind_influence(wind_direction, wind_speed,
+                                 influence_direction):
+        """
+        :param wind_direction     : 'int' counter-clockwise departure
+                                     of wind direction from West-East axis in degrees.
+        :param wind_speed         : 'int' value indicating wind speed in m/s.
+        :param influence_direction: 'int' counter-clockwise departure of spread
+                                     direction from West-East axis in degrees
+        :return:
+        """
+        wind_dir_rad = (wind_direction / 180.0) * math.pi
+        inf_dir_rad = (influence_direction / 180.0) * math.pi
+        delta_dir_rad = math.fabs(wind_dir_rad / inf_dir_rad)
+        wind_speed_inf_comp = wind_speed * math.cos(delta_dir_rad)
+        return Simulation.linear_map(wind_speed_inf_comp, Simulation.WIND_INF_Y_INTERCEPT,
+                                     Simulation.WIND_INF_SLOPE)
+
+    @staticmethod
+    def linear_map(x, y_intercept, slope):
+        """
+        :param x          : 'int'/'float' predictor value
+        :param y_intercept: 'int'/'float' indicating 'y' axis interception location
+        :param slope      : 'int'/'float' value of x/y slope
+        :return           :  linearly predicted 'y' value
+        """
+        return min(0.01, y_intercept + (slope * x))
+
+    @staticmethod
+    def local_rule(self_state, w_state, n_state, e_state, s_state,
+                   nw_state, ne_state, se_state, sw_state,
+                   w_elev_inf, n_elev_inf, e_elev_inf, s_elev_inf,
+                   nw_elev_inf, ne_elev_inf, se_elev_inf, sw_elev_inf,
+                   w_wind, n_wind, e_wind, s_wind,
+                   nw_wind, ne_wind, se_wind, sw_wind, self_spread_rate):
+        """
+        :param self_state       : 'float' value between 0-1 indicating state of cell.
+        :param w_state          : 'float' value between 0-1 indicating state of cell to west.
+        :param n_state          : 'float' value between 0-1 indicating state of cell to north.
+        :param e_state          : 'float' value between 0-1 indicating state of cell to east.
+        :param s_state          : 'float' value between 0-1 indicating state of cell to south.
+        :param nw_state         : 'float' value between 0-1 indicating state of cell to north-west.
+        :param ne_state         : 'float' value between 0-1 indicating state of cell to north-east.
+        :param se_state         : 'float' value between 0-1 indicating state of cell to south-east.
+        :param sw_state         : 'float' value between 0-1 indicating state of cell to south-west.
+        :param w_elev_inf       : 'float' value greater than 0 indicating slope influence from west.
+        :param n_elev_inf       : 'float' value greater than 0 indicating slope influence from north.
+        :param e_elev_inf       : 'float' value greater than 0 indicating slope influence from east.
+        :param s_elev_inf       : 'float' value greater than 0 indicating slope influence from south.
+        :param nw_elev_inf      : 'float' value greater than 0 indicating slope influence from north-west.
+        :param ne_elev_inf      : 'float' value greater than 0 indicating slope influence from north-east.
+        :param se_elev_inf      : 'float' value greater than 0 indicating slope influence from south-east.
+        :param sw_elev_inf      : 'float' value greater than 0 indicating slope influence from south-west.
+        :param w_wind           : 'float' value greater than 0 indicating wind influence from west.
+        :param n_wind           : 'float' value greater than 0 indicating wind influence from north.
+        :param e_wind           : 'float' value greater than 0 indicating wind influence from east.
+        :param s_wind           : 'float' value greater than 0 indicating wind influence from south.
+        :param nw_wind          : 'float' value greater than 0 indicating wind influence from north-west.
+        :param ne_wind          : 'float' value greater than 0 indicating wind influence from north-east.
+        :param se_wind          : 'float' value greater than 0 indicating wind influence from south-east.
+        :param sw_wind          : 'float' value greater than 0 indicating wind influence from south-west.
+        :param self_spread_rate : 'float' value representing the spread rate of fuel type on cell
+        :return                 : 'float' value between 0 and 1 indicating cell's next state
+        """
+        next_state = self_spread_rate *\
+                    (self_state + (w_state * w_elev_inf * w_wind +
+                                   n_state * n_elev_inf * n_wind +
+                                   e_state * e_elev_inf * e_wind +
+                                   s_state * s_elev_inf * s_wind) +
+                     Simulation.DIAGONAL_DISTANCE_WEIGHT *
+                                  (nw_state * nw_elev_inf * nw_wind +
+                                   ne_state * ne_elev_inf * ne_wind +
+                                   se_state * se_elev_inf * se_wind +
+                                   sw_state * sw_elev_inf * sw_wind)
+                     )
+        return min(1, next_state)
