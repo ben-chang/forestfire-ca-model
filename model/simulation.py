@@ -208,8 +208,8 @@ class Simulation(object):
     def get_max_key(dictionary):
 
         """
-        :param dictionary  : any arbitrary dictionary
-        :return max_val_key: the key of maximum value within the dictionary
+        :param dictionary  : Any arbitrary dictionary.
+        :return max_val_key: The key of maximum value within the dictionary.
         """
         max_val_key = dictionary.keys()[0]
         for key in dictionary.keys:
@@ -220,8 +220,8 @@ class Simulation(object):
     @staticmethod
     def random_choice(collection):
         """
-        :param collection: Any arbitrary iterable python collection
-        :return          : A random element of the input python collection
+        :param collection: Any arbitrary iterable python collection.
+        :return          : A random element of the input python collection.
         """
         return collection[randint(0, len(collection) - 1)]
 
