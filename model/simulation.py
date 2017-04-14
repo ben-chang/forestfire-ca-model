@@ -25,14 +25,13 @@ class Simulation(object):
                                 }
 
     def __init__(self, fuel_matrix, terrain_matrix,
-                 event_durations, cell_side_length, ignition_matrix,
+                 cell_side_length, ignition_matrix,
                  lookup_table=DEFAULT_FUEL_LOOKUP_TABLE):
         self.width = len(fuel_matrix[0])
         self.height = len(fuel_matrix)
         self.fuel_matrix = fuel_matrix
         self.terrain_inf_matrix = self.__initialise_terrain_influence_matrix(terrain_matrix)
         self.ignition_probabilities = self.__get_ignition_probabilities(ignition_matrix)
-        self.event_durations = event_durations
         self.cell_side_length = cell_side_length
         self.lookup_table = lookup_table
         self.max_spread_rate = Simulation.get_max_key(self.lookup_table)
@@ -130,13 +129,13 @@ class Simulation(object):
                      )
         return min(1, next_state)
 
-    def spread_fire(self, wind_data, random_ignition=False):
+    def spread_fire(self, wind_data, event_duration_hrs,
+                    random_ignition=False):
 
         previous_states = [[0] * (self.width+1) for i in xrange(self.height+1)]
-        event_duration = Simulation.random_choice(self.event_durations)
         n_iterations = Simulation.get_n_iterations(self.max_spread_rate,
                                                    self.cell_side_length,
-                                                   event_duration)
+                                                   event_duration_hrs)
 
         wind = Simulation.random_choice(wind_data)
         wind_dir, wind_speed = wind[0], wind[1]
