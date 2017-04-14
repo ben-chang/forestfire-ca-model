@@ -50,7 +50,7 @@ def parse_header (file):
     nRows = None
     for line in file:
         words = line.split(' ')
-        if (words[0] == COL_WORD):
+        if words[0] == COL_WORD:
             try:
                 nCols = int(words[1])
             except IndexError:
