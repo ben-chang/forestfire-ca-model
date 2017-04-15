@@ -206,7 +206,7 @@ class Simulation(object):
         buffered_matrix = [[buffer_fill] * (n_cols+buffer_size*2)] * buffer_size
         for row in matrix:
             buffered_matrix.append(([buffer_fill] * buffer_size) + row + ([buffer_fill] * buffer_size))
-        buffered_matrix += [[buffer_fill] * (n_cols + buffer_size * 2)] * buffer_size
+        buffered_matrix += [[buffer_fill] * (n_cols+buffer_size*2)] * buffer_size
         return buffered_matrix
 
     @staticmethod
