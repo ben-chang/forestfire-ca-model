@@ -71,7 +71,7 @@ class Simulation(object):
                                           influencing fire spread towards the middle cell.
 
         """
-        terrain_matrix = Simulation.add_buffer_zone(terrain_matrix, 1, 0)
+        terrain_matrix = Simulation.add_buffer_zone(terrain_matrix, 0)
         terrain_influence_matrix = []
         for i in xrange(1, self.height, 1):
             sub_matrix = []
@@ -195,18 +195,18 @@ class Simulation(object):
             previous_states = next_states
 
     @staticmethod
-    def add_buffer_zone(matrix, buffer_size, buffer_fill):
+    def add_buffer_zone(matrix, buffer_fill):
         """
         :param matrix           : Arbitrary nested Python List (matrix).
-        :param buffer_size      : 'int' value representing buffer zone width
         :param buffer_fill      : Any arbitrary value to fill matrix buffer zone.
         :return buffered_matrix : Buffered matrix.
         """
         n_cols = len(matrix[0])
-        buffered_matrix = [[buffer_fill] * (n_cols+buffer_size*2)] * buffer_size
+        buffered_matrix = list()
+        buffered_matrix.append([0] * (n_cols+2))
         for row in matrix:
-            buffered_matrix.append(([buffer_fill] * buffer_size) + row + ([buffer_fill] * buffer_size))
-        buffered_matrix += [[buffer_fill] * (n_cols+buffer_size*2)] * buffer_size
+            buffered_matrix.append([buffer_fill] + row + [buffer_fill])
+        buffered_matrix.append([0] * (n_cols+2))
         return buffered_matrix
 
     @staticmethod
