@@ -9,7 +9,7 @@ class Simulation(object):
                       topography and spatial ignition likelihoods). The class and the
                       fire_spread() function is flexible in the sense that it allows
                       users to use any arbitrary fire event duration, ignition location,
-                      wind speed and wind direction for spread events.
+                      wind speed and wind direction for individual spread events.
     """
 
     WIND_INF_Y_INTERCEPT = 1
