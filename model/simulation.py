@@ -206,7 +206,6 @@ class Simulation(object):
 
     @staticmethod
     def get_max_key(dictionary):
-
         """
         :param dictionary  : Any arbitrary dictionary.
         :return max_val_key: The key of maximum value within the dictionary.
@@ -286,8 +285,8 @@ class Simulation(object):
         :param ne_wind          : 'float' value greater than 0 indicating wind influence from north-east.
         :param se_wind          : 'float' value greater than 0 indicating wind influence from south-east.
         :param sw_wind          : 'float' value greater than 0 indicating wind influence from south-west.
-        :param self_spread_rate : 'float' value representing the spread rate of fuel type on cell
-        :return                 : 'float' value between 0 and 1 indicating cell's next state
+        :param self_spread_rate : 'float' value representing the spread rate of fuel type on cell.
+        :return                 : 'float' value between 0 and 1 indicating cell's next state.
         """
         next_state = self_spread_rate *\
                     (self_state + (w_state * w_elev_inf * w_wind +
