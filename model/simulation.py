@@ -33,7 +33,7 @@ class Simulation(object):
                                 }
 
     def __init__(self, fuel_matrix, terrain_matrix,
-                 cell_side_length, ignition_matrix,
+                 ignition_matrix, cell_side_length,
                  lookup_table=DEFAULT_FUEL_LOOKUP_TABLE):
 
         """
@@ -305,14 +305,14 @@ class Simulation(object):
         :return                 : 'float' value between 0 and 1 indicating cell's next state.
         """
         next_state = self_spread_rate *\
-                    (self_state + (w_state * w_elev_inf * w_wind +
-                                   n_state * n_elev_inf * n_wind +
-                                   e_state * e_elev_inf * e_wind +
-                                   s_state * s_elev_inf * s_wind) +
-                     Simulation.DIAGONAL_DISTANCE_WEIGHT *
+                     (self_state + (w_state * w_elev_inf * w_wind +
+                                    n_state * n_elev_inf * n_wind +
+                                    e_state * e_elev_inf * e_wind +
+                                    s_state * s_elev_inf * s_wind) +
+                      Simulation.DIAGONAL_DISTANCE_WEIGHT *
                                   (nw_state * nw_elev_inf * nw_wind +
                                    ne_state * ne_elev_inf * ne_wind +
                                    se_state * se_elev_inf * se_wind +
                                    sw_state * sw_elev_inf * sw_wind)
-                     )
+                      )
         return min(1, next_state)

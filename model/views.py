@@ -45,6 +45,14 @@ class View(Canvas):
 
     def __init__(self, master, width, height, n_classes=_N_CLASSES,
                  fuel_color_map=DEFAULT_FUEL_COLOR_MAP, color_scheme=BLACK_SCHEME):
+        """
+        :param master:
+        :param width:
+        :param height:
+        :param n_classes:
+        :param fuel_color_map:
+        :param color_scheme:
+        """
         Canvas.__init__(self, master=master, width=width, height=height)
         self._height = height
         self._width = width
@@ -57,40 +65,68 @@ class View(Canvas):
         self._is_view_changed = False
 
     def add_fuel_model(self, fuel_model):
-        self._is_view_changed = True
-        self._active_part = View._FUEL_ACTIVE
+        """
+        :param fuel_model:
+        :return:
+        """
+        self.activate_fuel_view()
 
     def add_terrain_model(self, terrain_model):
-        self._is_view_changed = True
-        self._active_part = View._TERRAIN_ACTIVE
+        """
+        :param terrain_model:
+        :return:
+        """
         self._elev_min, self._elev_max = View.find_min_and_max(terrain_model)
+        self.activate_terrain_view()
 
     def add_ignition_model(self, ignition_model):
-        self._is_view_changed = True
-        self._active_part = View._IGNITIONS_ACTIVE
+        """
+        :param ignition_model:
+        :return:
+        """
         self._ign_min, self._ign_max = View.find_min_and_max(ignition_model)
+        self.activate_ignition_view()
 
     def activate_fuel_view(self):
+        """
+        :return:
+        """
         if self._active_part != View._FUEL_ACTIVE:
             self._active_part = View._FUEL_ACTIVE
             self._is_view_changed = True
+            self.refresh()
 
     def activate_terrain_view(self):
+        """
+        :return:
+        """
         if self._active_part != View._TERRAIN_ACTIVE:
             self._active_part = View._TERRAIN_ACTIVE
             self._is_view_changed = True
+            self.refresh()
 
     def activate_ignition_view(self):
+        """
+        :return:
+        """
         if self._active_part != View._IGNITIONS_ACTIVE:
             self._active_part = View._IGNITIONS_ACTIVE
             self._is_view_changed = True
+            self.refresh()
 
     def activate_simulation_view(self):
+        """
+        :return:
+        """
         if self._active_part != View._SIMULATION_ACTIVE:
             self._active_part = View._SIMULATION_ACTIVE
             self._is_view_changed = True
+            self.refresh()
 
     def refresh(self):
+        """
+        :return:
+        """
         if self._is_view_changed:
             if self._active_part == View._FUEL_ACTIVE:
                 self._draw_fuel_view()
@@ -122,6 +158,10 @@ class View(Canvas):
 
     @staticmethod
     def find_min_and_max(matrix):
+        """
+        :param matrix:
+        :return:
+        """
         temp_min, temp_max = matrix[0][0], matrix[0][0]
         for row in matrix:
             for val in row:
@@ -133,6 +173,10 @@ class View(Canvas):
 
     @staticmethod
     def find_unique_elements(matrix):
+        """
+        :param matrix:
+        :return:
+        """
         uniques = []
         for row in matrix:
             for val in row:
@@ -142,6 +186,14 @@ class View(Canvas):
 
     @staticmethod
     def calculate_color(min_val, max_val, classes, val, color_scheme):
+        """
+        :param min_val:
+        :param max_val:
+        :param classes:
+        :param val:
+        :param color_scheme:
+        :return:
+        """
         if val < 0:
             return View.convert_rbg_triplet_hexadecimal((255, 255, 255))
         gradient = (max_val - min_val) / float(classes)
@@ -156,17 +208,29 @@ class View(Canvas):
 
     @staticmethod
     def convert_rbg_triplet_hexadecimal(rbg):
+        """
+        :param rbg:
+        :return:
+        """
         return '#'+''.join(map(chr, rbg)).encode('hex')
 
 
 class MapView(View):
 
-    def __init__(self, master, width, height, legend_view,
+    def __init__(self, master, width, height,
                  n_cols, n_rows, n_classes=View._N_CLASSES,
                  fuel_color_map=View.DEFAULT_FUEL_COLOR_MAP,):
+        """
+        :param master:
+        :param width:
+        :param height:
+        :param n_cols:
+        :param n_rows:
+        :param n_classes:
+        :param fuel_color_map:
+        """
         View.__init__(self, master=master, width=width, height=height,
                       n_classes=n_classes, fuel_color_map=fuel_color_map)
-        self.__legend_view = legend_view
         self.__n_cols, self.__n_rows = n_cols, n_rows
         self.__start_x, self.__start_y, self.__square_side = MapView.get_dimensions(width, height,
                                                                                     n_cols, n_rows)
@@ -178,44 +242,36 @@ class MapView(View):
 
     @override
     def add_fuel_model(self, fuel_model):
-        View.add_fuel_model(self, fuel_model)
+        """
+        :param fuel_model:
+        :return:
+        """
         self.__fuel_model = fuel_model
-        self.__legend_view.add_fuel_model(fuel_model)
+        View.add_fuel_model(self, fuel_model)
 
     @override
     def add_terrain_model(self, terrain_model):
-        View.add_terrain_model(self, terrain_model)
+        """
+        :param terrain_model:
+        :return:
+        """
         self.__terrain_model = terrain_model
-        self.__legend_view.add_terrain_model(terrain_model)
+        View.add_terrain_model(self, terrain_model)
 
     @override
     def add_ignition_model(self, ignition_model):
-        View.add_ignition_model(self, ignition_model)
+        """
+        :param ignition_model:
+        :return:
+        """
         self.__ignition_model = ignition_model
-        self.__legend_view.add_ignition_model(ignition_model)
-
-    @override
-    def activate_fuel_view(self):
-        View.activate_fuel_view(self)
-        self.__legend_view.activate_fuel_view()
-
-    @override
-    def activate_terrain_view(self):
-        View.activate_terrain_view(self)
-        self.__legend_view.activate_terrain_view()
-
-    @override
-    def activate_ignition_view(self):
-        View.activate_ignition_view(self)
-        self.__legend_view.activate_ignition_view()
-
-    @override
-    def activate_simulation_view(self):
-        View.activate_simulation_view(self)
-        self.__legend_view.activate_simulation_view()
+        View.add_ignition_model(self, ignition_model)
 
     @override
     def refresh(self):
+        """
+        :return:
+        """
         is_refreshed = View.refresh(self)
         if (not is_refreshed) and (self._active_part == View._SIMULATION_ACTIVE) and\
            self.__is_fire_state_changed:
@@ -225,12 +281,19 @@ class MapView(View):
         return False
 
     def update_fire_state(self, fire_state):
+        """
+        :param fire_state:
+        :return:
+        """
         self.__fire_state = fire_state
         self.__is_fire_state_changed = True
         self.refresh()
 
     @override
     def _draw_fuel_view(self):
+        """
+        :return:
+        """
         if self.__fuel_model is not None:
             side = self.__square_side
             for i in xrange(self.__n_rows):
@@ -243,6 +306,9 @@ class MapView(View):
 
     @override
     def _draw_terrain_view(self):
+        """
+        :return:
+        """
         if self.__terrain_model is not None:
             self.__draw_continuous_view(self._elev_min, self._elev_max,
                                         self.__terrain_model, self._color_scheme,
@@ -250,6 +316,9 @@ class MapView(View):
 
     @override
     def _draw_ignition_view(self):
+        """
+        :return:
+        """
         if self.__ignition_model is not None:
             self.__draw_continuous_view(self._ign_min, self._ign_max,
                                         self.__ignition_model, self._color_scheme,
@@ -257,6 +326,9 @@ class MapView(View):
 
     @override
     def _draw_simulation_view(self):
+        """
+        :return:
+        """
         if self.__fire_state is not None:
             self.__draw_continuous_view(0.0, 1.0, self.__fire_state,
                                         View.YELLOW_RED_SCHEME, 10,
@@ -264,6 +336,15 @@ class MapView(View):
 
     def __draw_continuous_view(self, min_val, max_val, value_matrix,
                                scheme, n_classes, is_simulation_view=False):
+        """
+        :param min_val:
+        :param max_val:
+        :param value_matrix:
+        :param scheme:
+        :param n_classes:
+        :param is_simulation_view:
+        :return:
+        """
         color_scheme = View.DEFAULT_GRADIENT_COLOR_SCHEMES[scheme]
         side = self.__square_side
         for i in xrange(self.__n_rows):
@@ -278,6 +359,13 @@ class MapView(View):
 
     @staticmethod
     def get_dimensions(canvas_width, canvas_height, n_cols, n_rows):
+        """
+        :param canvas_width:
+        :param canvas_height:
+        :param n_cols:
+        :param n_rows:
+        :return:
+        """
         if n_cols > n_rows:
             drawn_col_width = canvas_width / n_cols
         else:
@@ -291,40 +379,55 @@ class LegendView(View):
 
     def __init__(self, master, width, height, n_classes=View._N_CLASSES,
                  fuel_color_map=View.DEFAULT_FUEL_COLOR_MAP):
+        """
+        :param master:
+        :param width:
+        :param height:
+        :param n_classes:
+        :param fuel_color_map:
+        """
         View.__init__(self, master=master, width=width, height=height,
                       n_classes=n_classes, fuel_color_map=fuel_color_map)
         self.__fuel_types = None
 
     @override
     def add_fuel_model(self, fuel_model):
+        """
+        :param fuel_model:
+        :return:
+        """
         View.add_fuel_model(self, fuel_model)
         self.__fuel_types = View.find_unique_elements(fuel_model)
 
     @override
-    def add_terrain_model(self, terrain_model):
-        View.add_terrain_model(self, terrain_model)
-
-    @override
-    def add_ignition_model(self, ignition_model):
-        View.add_ignition_model(self, ignition_model)
-
-    @override
     def _draw_fuel_view(self):
+        """
+        :return:
+        """
         if self.__fuel_types is not None:
             pass
 
     @override
     def _draw_terrain_view(self):
+        """
+        :return:
+        """
         if self._elev_min is not None and self._elev_max is not None:
             pass
 
     @override
     def _draw_ignition_view(self):
+        """
+        :return:
+        """
         if self._ign_min is not None and self._ign_max is not None:
             pass
 
     @override
     def _draw_simulation_view(self):
+        """
+        :return:
+        """
         pass
 
 
