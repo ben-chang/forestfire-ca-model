@@ -1,5 +1,6 @@
 from Tkinter import Canvas
 from abc import ABCMeta, abstractmethod
+from Tkinter import SW
 
 
 class View(Canvas):
@@ -34,6 +35,20 @@ class View(Canvas):
                               10: (0, 0, 0)
                             }
 
+    DEFAULT_FUEL_NAME_MAP = {
+                             0: "fuel type 0",
+                             1: "fuel type 1",
+                             2: "fuel type 2",
+                             3: "fuel type 3",
+                             4: "fuel type 4",
+                             5: "fuel type 5",
+                             6: "fuel type 6",
+                             7: "fuel type 7",
+                             8: "fuel type 8",
+                             9: "fuel type 9",
+                             10: "fuel type 10"
+                            }
+
     DEFAULT_GRADIENT_COLOR_SCHEMES = {
                                       YELLOW_RED_SCHEME: ((255, 255, 0), (255, 0, 0)),
                                       BLACK_SCHEME: ((0, 0, 0), (255, 255, 255)),
@@ -44,7 +59,9 @@ class View(Canvas):
                                       }
 
     def __init__(self, master, width, height, n_classes=_N_CLASSES,
-                 fuel_color_map=DEFAULT_FUEL_COLOR_MAP, color_scheme=BLACK_SCHEME):
+                 fuel_color_map=DEFAULT_FUEL_COLOR_MAP,
+                 color_scheme_map=DEFAULT_GRADIENT_COLOR_SCHEMES,
+                 color_scheme=BLACK_SCHEME):
         """
         :param master:
         :param width:
@@ -58,6 +75,7 @@ class View(Canvas):
         self._width = width
         self._n_classes = n_classes
         self._fuel_color_map = fuel_color_map
+        self._color_schemes = color_scheme_map
         self._color_scheme = color_scheme
         self._elev_min, self._elev_max = None, None
         self._ign_min, self._ign_max = None, None
@@ -219,7 +237,9 @@ class MapView(View):
 
     def __init__(self, master, width, height,
                  n_cols, n_rows, n_classes=View._N_CLASSES,
-                 fuel_color_map=View.DEFAULT_FUEL_COLOR_MAP,):
+                 fuel_color_map=View.DEFAULT_FUEL_COLOR_MAP,
+                 color_scheme_map=View.DEFAULT_GRADIENT_COLOR_SCHEMES,
+                 color_scheme=View.BLACK_SCHEME):
         """
         :param master:
         :param width:
@@ -230,7 +250,8 @@ class MapView(View):
         :param fuel_color_map:
         """
         View.__init__(self, master=master, width=width, height=height,
-                      n_classes=n_classes, fuel_color_map=fuel_color_map)
+                      n_classes=n_classes, fuel_color_map=fuel_color_map,
+                      color_scheme_map=color_scheme_map, color_scheme=color_scheme)
         self.__n_cols, self.__n_rows = n_cols, n_rows
         self.__start_x, self.__start_y, self.__square_side = MapView.get_dimensions(width, height,
                                                                                     n_cols, n_rows)
@@ -311,7 +332,8 @@ class MapView(View):
         """
         if self.__terrain_model is not None:
             self.__draw_continuous_view(self._elev_min, self._elev_max,
-                                        self.__terrain_model, self._color_scheme,
+                                        self.__terrain_model,
+                                        self._color_schemes[self._color_scheme],
                                         self._n_classes)
 
     @override
@@ -321,7 +343,8 @@ class MapView(View):
         """
         if self.__ignition_model is not None:
             self.__draw_continuous_view(self._ign_min, self._ign_max,
-                                        self.__ignition_model, self._color_scheme,
+                                        self.__ignition_model,
+                                        self._color_schemes[self._color_scheme],
                                         self._n_classes)
 
     @override
@@ -330,8 +353,9 @@ class MapView(View):
         :return:
         """
         if self.__fire_state is not None:
+            color_scheme = View.DEFAULT_GRADIENT_COLOR_SCHEMES[View.YELLOW_RED_SCHEME]
             self.__draw_continuous_view(0.0, 1.0, self.__fire_state,
-                                        View.YELLOW_RED_SCHEME, 10,
+                                        color_scheme, 10,
                                         is_simulation_view=True)
 
     def __draw_continuous_view(self, min_val, max_val, value_matrix,
@@ -345,7 +369,6 @@ class MapView(View):
         :param is_simulation_view:
         :return:
         """
-        color_scheme = View.DEFAULT_GRADIENT_COLOR_SCHEMES[scheme]
         side = self.__square_side
         for i in xrange(self.__n_rows):
             for j in xrange(self.__n_cols):
@@ -354,7 +377,7 @@ class MapView(View):
                 x = self.__start_x + j * side
                 y = self.__start_y + i * side
                 color = View.calculate_color(min_val, max_val, n_classes,
-                                             value_matrix[i][j], color_scheme)
+                                             value_matrix[i][j], scheme)
                 Canvas.create_rectangle(self, x, y, x+side, y+side, fill=color)
 
     @staticmethod
@@ -377,8 +400,12 @@ class MapView(View):
 
 class LegendView(View):
 
-    def __init__(self, master, width, height, n_classes=View._N_CLASSES,
-                 fuel_color_map=View.DEFAULT_FUEL_COLOR_MAP):
+    def __init__(self, master, width, height,
+                 n_classes=View._N_CLASSES, measuring_unit_string="%",
+                 fuel_name_map=View.DEFAULT_FUEL_NAME_MAP,
+                 fuel_color_map=View.DEFAULT_FUEL_COLOR_MAP,
+                 color_scheme_map=View.DEFAULT_GRADIENT_COLOR_SCHEMES,
+                 color_scheme=View.BLACK_SCHEME):
         """
         :param master:
         :param width:
@@ -387,7 +414,10 @@ class LegendView(View):
         :param fuel_color_map:
         """
         View.__init__(self, master=master, width=width, height=height,
-                      n_classes=n_classes, fuel_color_map=fuel_color_map)
+                      n_classes=n_classes, fuel_color_map=fuel_color_map,
+                      color_scheme_map=color_scheme_map, color_scheme=color_scheme)
+        self.__measuring_unit_string = measuring_unit_string
+        self.__fuel_name_map = fuel_name_map
         self.__fuel_types = None
 
     @override
@@ -404,8 +434,41 @@ class LegendView(View):
         """
         :return:
         """
-        if self.__fuel_types is not None:
-            pass
+        is_width_longer = self._width > self._height
+        start_x, start_y, x_pos, y_pos = 0, 0, 0, 0
+        text_x_pos, text_y_pos = 0, 0
+        half_n_fuels, x_leap = 0, 0
+        n_fuels = len(self.__fuel_types)
+        trim = 2
+        if is_width_longer:
+            start_y = int(self._height * 0.1)
+            start_x = int(self._width * 0.1)
+            square_side = int(0.2 * self._height)
+            half_n_fuels = n_fuels / 2
+            x_leap = (self._width - (2 * start_x)) / half_n_fuels
+        else:
+            x_pos = int(self._width * 0.1)
+            start_y = int(self._height * 0.1)
+            square_side = int(0.2 * self._width)
+            text_x_pos = x_pos + square_side + trim
+        for i in xrange(n_fuels):
+            decimal_color = self._fuel_color_map[self.__fuel_types[i]]
+            hex_color = View.convert_rbg_triplet_hexadecimal(decimal_color)
+            fuel_name = self.__fuel_name_map[self.__fuel_types[i]]
+            if is_width_longer:
+                x_pos = start_x + ((i % half_n_fuels) * x_leap)
+                y_pos = start_y + ((i / half_n_fuels) * (square_side + trim))
+                text_x_pos = x_pos + square_side + trim
+                text_y_pos = y_pos + square_side
+            else:
+                y_pos = start_y + (i * (square_side + trim))
+                text_y_pos = y_pos + square_side
+            Canvas.create_rectangle(self, x_pos, y_pos,
+                                    x_pos+square_side,
+                                    y_pos+square_side,
+                                    fill=hex_color)
+            Canvas.create_text(self, text_x_pos, text_y_pos,
+                               anchor=SW,  text=fuel_name)
 
     @override
     def _draw_terrain_view(self):
@@ -413,7 +476,10 @@ class LegendView(View):
         :return:
         """
         if self._elev_min is not None and self._elev_max is not None:
-            pass
+            self.__draw_continuous_view(self._elev_min, self._elev_max,
+                                        self._color_schemes[self._color_scheme],
+                                        self.__measuring_unit_string,
+                                        self._n_classes)
 
     @override
     def _draw_ignition_view(self):
@@ -421,14 +487,66 @@ class LegendView(View):
         :return:
         """
         if self._ign_min is not None and self._ign_max is not None:
-            pass
+            self.__draw_continuous_view(self._ign_min, self._ign_max,
+                                        self._color_schemes[self._color_scheme],
+                                        self.__measuring_unit_string,
+                                        self._n_classes)
 
     @override
     def _draw_simulation_view(self):
         """
         :return:
         """
-        pass
+        color_scheme = View.DEFAULT_GRADIENT_COLOR_SCHEMES[View.YELLOW_RED_SCHEME]
+        self.__draw_continuous_view(0.0, 1.0, color_scheme,
+                                    self.__measuring_unit_string,
+                                    self._n_classes)
+
+    def __draw_continuous_view(self, min_val, max_val,
+                               scheme, measuring_unit_string,
+                               n_classes):
+        """
+        :param min_val:
+        :param max_val:
+        :param scheme:
+        :param measuring_unit_string:
+        :param n_classes:
+        :return:
+        """
+        is_width_longer = self._width > self._height
+        start_x, start_y, x_pos, y_pos = 0, 0, 0, 0
+        val_range = (max_val - min_val) / n_classes
+        if is_width_longer:
+            y_pos = int(self._height * 0.2)
+            start_x = int(self._width * 0.25)
+            square_side1 = int(0.2 * self._height)
+            square_side2 = int((self._width/2) / n_classes)
+        else:
+            x_pos = int(self._width * 0.2)
+            start_y = int(self._height * 0.25)
+            square_side1 = int((self._height / 2) / n_classes)
+            square_side2 = int(0.2 * self._width)
+        for i in xrange(n_classes):
+            color = View.calculate_color(min_val, max_val, n_classes,
+                                         val_range * i + 1,
+                                         scheme)
+            if is_width_longer:
+                x_pos = start_x + (i * square_side2)
+            else:
+                y_pos = start_y + (i * square_side2)
+            Canvas.create_rectangle(self, x_pos, y_pos,
+                                    x_pos+square_side1,
+                                    y_pos+square_side2,
+                                    fill=color)
+        text = str(float(min)) + measuring_unit_string + " - " +\
+               str(float(max)) + measuring_unit_string
+        if is_width_longer:
+            x = int(self._width / 2)
+            y = int(self._height * 0.7)
+        else:
+            x = int(self._width * 0.7)
+            y = int(self._height / 2)
+        Canvas.create_text(self, x, y, text=text)
 
 
 def override(f): return f
