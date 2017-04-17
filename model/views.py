@@ -1,11 +1,14 @@
 from Tkinter import Canvas
-from abc import ABCMeta, abstractmethod
 from Tkinter import SW
 
 
-class View(Canvas):
+def override(f): return f
 
-    __metaclass__ = ABCMeta
+
+def abstractmethod(f): return f
+
+
+class View(Canvas):
 
     _FUEL_ACTIVE = 0
     _TERRAIN_ACTIVE = 1
@@ -546,6 +549,3 @@ class LegendView(View):
             x = int(self._width * 0.7)
             y = int(self._height / 2)
         Canvas.create_text(self, x, y, text=text)
-
-
-def override(f): return f

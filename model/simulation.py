@@ -310,9 +310,9 @@ class Simulation(object):
                                     e_state * e_elev_inf * e_wind +
                                     s_state * s_elev_inf * s_wind) +
                       Simulation.DIAGONAL_DISTANCE_WEIGHT *
-                                  (nw_state * nw_elev_inf * nw_wind +
-                                   ne_state * ne_elev_inf * ne_wind +
-                                   se_state * se_elev_inf * se_wind +
-                                   sw_state * sw_elev_inf * sw_wind)
+                                   (nw_state * nw_elev_inf * nw_wind +
+                                    ne_state * ne_elev_inf * ne_wind +
+                                    se_state * se_elev_inf * se_wind +
+                                    sw_state * sw_elev_inf * sw_wind)
                       )
         return min(1, next_state)

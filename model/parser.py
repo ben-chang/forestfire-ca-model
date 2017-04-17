@@ -77,3 +77,9 @@ def parse_header(input_file):
 
 def is_header_parsing_finished(n_cols, n_rows):
     return n_rows is not None and n_cols is not None
+
+
+#def override(f): return f
+
+
+#def abstractmethod(f): return f
