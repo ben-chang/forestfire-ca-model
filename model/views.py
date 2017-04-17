@@ -503,13 +503,13 @@ class LegendView(View):
                                     self._n_classes)
 
     def __draw_continuous_view(self, min_val, max_val,
-                               scheme, measuring_unit_string,
+                               scheme, m_unit_string,
                                n_classes):
         """
         :param min_val:
         :param max_val:
         :param scheme:
-        :param measuring_unit_string:
+        :param m_unit_string:
         :param n_classes:
         :return:
         """
@@ -538,8 +538,7 @@ class LegendView(View):
                                     x_pos+square_side1,
                                     y_pos+square_side2,
                                     fill=color)
-        text = str(float(min)) + measuring_unit_string + " - " +\
-               str(float(max)) + measuring_unit_string
+        text = str(float(min))+m_unit_string+" - "+str(float(max))+m_unit_string
         if is_width_longer:
             x = int(self._width / 2)
             y = int(self._height * 0.7)
