@@ -193,12 +193,14 @@ public class TopographyCreatorController extends JFrame implements ActionListene
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        JFileChooser chooser = new JFileChooser();
-        int returnVal = chooser.showOpenDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            String fileName = chooser.getSelectedFile().getAbsolutePath();
-            System.out.println(fileName);
-            writeToFile(fileName, canvas.getValueMatrix());
-        }
+        String fileName = "elevation.asc";
+        writeToFile(fileName, canvas.getValueMatrix());
+        //JFileChooser chooser = new JFileChooser();
+        //int returnVal = chooser.showOpenDialog(this);
+        //if (returnVal == JFileChooser.APPROVE_OPTION) {
+        //    String fileName = chooser.getSelectedFile().getAbsolutePath();
+        //    System.out.println(fileName);
+        //    writeToFile(fileName, canvas.getValueMatrix());
+        //}
     }
 }
