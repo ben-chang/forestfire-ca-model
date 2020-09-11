@@ -2,12 +2,6 @@ from Tkinter import Canvas
 from Tkinter import SW
 
 
-def override(f): return f
-
-
-def abstractmethod(f): return f
-
-
 class View(Canvas):
 
     _FUEL_ACTIVE = 0
@@ -25,41 +19,41 @@ class View(Canvas):
     YELLOW_RED_SCHEME = 'yellow_red'
 
     DEFAULT_FUEL_COLOR_MAP = {
-                              0: (0, 0, 0),
-                              1: (0, 0, 0),
-                              2: (0, 0, 0),
-                              3: (0, 0, 0),
-                              4: (0, 0, 0),
-                              5: (0, 0, 0),
-                              6: (0, 0, 0),
-                              7: (0, 0, 0),
-                              8: (0, 0, 0),
-                              9: (0, 0, 0),
-                              10: (0, 0, 0)
-                            }
+        0: (0, 0, 0),
+        1: (0, 0, 0),
+        2: (0, 0, 0),
+        3: (0, 0, 0),
+        4: (0, 0, 0),
+        5: (0, 0, 0),
+        6: (0, 0, 0),
+        7: (0, 0, 0),
+        8: (0, 0, 0),
+        9: (0, 0, 0),
+        10: (0, 0, 0)
+    }
 
     DEFAULT_FUEL_NAME_MAP = {
-                             0: "fuel type 0",
-                             1: "fuel type 1",
-                             2: "fuel type 2",
-                             3: "fuel type 3",
-                             4: "fuel type 4",
-                             5: "fuel type 5",
-                             6: "fuel type 6",
-                             7: "fuel type 7",
-                             8: "fuel type 8",
-                             9: "fuel type 9",
-                             10: "fuel type 10"
-                            }
+        0: "fuel type 0",
+        1: "fuel type 1",
+        2: "fuel type 2",
+        3: "fuel type 3",
+        4: "fuel type 4",
+        5: "fuel type 5",
+        6: "fuel type 6",
+        7: "fuel type 7",
+        8: "fuel type 8",
+        9: "fuel type 9",
+        10: "fuel type 10"
+    }
 
     DEFAULT_GRADIENT_COLOR_SCHEMES = {
-                                      YELLOW_RED_SCHEME: ((255, 255, 0), (255, 0, 0)),
-                                      BLACK_SCHEME: ((0, 0, 0), (255, 255, 255)),
-                                      GREEN_SCHEME: ((255, 255, 255), (0, 255, 0)),
-                                      BLUE_SCHEME: ((255, 255, 255), (0, 0, 255)),
-                                      YELLOW_SCHEME: ((255, 255, 255), (255, 255, 0)),
-                                      RED_SCHEME: ((255, 255, 255), (255, 0, 0)),
-                                      }
+        YELLOW_RED_SCHEME: ((255, 255, 0), (255, 0, 0)),
+        BLACK_SCHEME: ((0, 0, 0), (255, 255, 255)),
+        GREEN_SCHEME: ((255, 255, 255), (0, 255, 0)),
+        BLUE_SCHEME: ((255, 255, 255), (0, 0, 255)),
+        YELLOW_SCHEME: ((255, 255, 255), (255, 255, 0)),
+        RED_SCHEME: ((255, 255, 255), (255, 0, 0)),
+    }
 
     def __init__(self, master, width, height, n_classes=_N_CLASSES,
                  fuel_color_map=DEFAULT_FUEL_COLOR_MAP,
@@ -161,19 +155,19 @@ class View(Canvas):
             return True
         return False
 
-    @abstractmethod
+    #@abstractmethod
     def _draw_fuel_view(self):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def _draw_terrain_view(self):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def _draw_ignition_view(self):
         pass
 
-    @abstractmethod
+    #@abstractmethod
     def _draw_simulation_view(self):
         pass
 
@@ -264,7 +258,7 @@ class MapView(View):
         self.__fire_state = None
         self.__is_fire_state_changed = False
 
-    @override
+    #@override
     def add_fuel_model(self, fuel_model):
         """
         :param fuel_model:
@@ -273,7 +267,7 @@ class MapView(View):
         self.__fuel_model = fuel_model
         View.add_fuel_model(self, fuel_model)
 
-    @override
+    #@override
     def add_terrain_model(self, terrain_model):
         """
         :param terrain_model:
@@ -282,7 +276,7 @@ class MapView(View):
         self.__terrain_model = terrain_model
         View.add_terrain_model(self, terrain_model)
 
-    @override
+    #@override
     def add_ignition_model(self, ignition_model):
         """
         :param ignition_model:
@@ -291,7 +285,7 @@ class MapView(View):
         self.__ignition_model = ignition_model
         View.add_ignition_model(self, ignition_model)
 
-    @override
+    #@override
     def refresh(self):
         """
         :return:
@@ -313,7 +307,7 @@ class MapView(View):
         self.__is_fire_state_changed = True
         self.refresh()
 
-    @override
+    #@override
     def _draw_fuel_view(self):
         """
         :return:
@@ -328,7 +322,7 @@ class MapView(View):
                     hex_color = View.convert_rbg_triplet_hexadecimal(rbg_color)
                     Canvas.create_rectangle(self, x, y, x+side, y+side, fill=hex_color)
 
-    @override
+    #@override
     def _draw_terrain_view(self):
         """
         :return:
@@ -339,7 +333,7 @@ class MapView(View):
                                         self._color_schemes[self._color_scheme],
                                         self._n_classes)
 
-    @override
+    #@override
     def _draw_ignition_view(self):
         """
         :return:
@@ -350,7 +344,7 @@ class MapView(View):
                                         self._color_schemes[self._color_scheme],
                                         self._n_classes)
 
-    @override
+    #@override
     def _draw_simulation_view(self):
         """
         :return:
@@ -423,7 +417,7 @@ class LegendView(View):
         self.__fuel_name_map = fuel_name_map
         self.__fuel_types = None
 
-    @override
+    #@override
     def add_fuel_model(self, fuel_model):
         """
         :param fuel_model:
@@ -432,7 +426,7 @@ class LegendView(View):
         View.add_fuel_model(self, fuel_model)
         self.__fuel_types = View.find_unique_elements(fuel_model)
 
-    @override
+    #@override
     def _draw_fuel_view(self):
         """
         :return:
@@ -473,7 +467,7 @@ class LegendView(View):
             Canvas.create_text(self, text_x_pos, text_y_pos,
                                anchor=SW,  text=fuel_name)
 
-    @override
+    #@override
     def _draw_terrain_view(self):
         """
         :return:
@@ -484,7 +478,7 @@ class LegendView(View):
                                         self.__measuring_unit_string,
                                         self._n_classes)
 
-    @override
+    #@override
     def _draw_ignition_view(self):
         """
         :return:
@@ -495,7 +489,7 @@ class LegendView(View):
                                         self.__measuring_unit_string,
                                         self._n_classes)
 
-    @override
+    #@override
     def _draw_simulation_view(self):
         """
         :return:
